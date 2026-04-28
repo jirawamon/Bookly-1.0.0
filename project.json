@@ -1,0 +1,204 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "image": "images/product-item1.png",
+      "title": "The Phoenix Chronicles",
+      "url": "product-1.html",
+      "author": "Lauren Asher",
+      "rating": 5,
+      "original_price": 1666,
+      "sale_price": 999
+    },
+    {
+      "id": 2,
+      "image": "images/product-item2.png",
+      "title": "Shadow of the Wind",
+      "url": "product-2.html",
+      "author": "Carlos Ruiz Zafón",
+      "rating": 4,
+      "original_price": 1200,
+      "sale_price": 850
+    },
+    {
+      "id": 3,
+      "image": "images/product-item3.png",
+      "title": "Echoes of Eternity",
+      "url": "product-3.html",
+      "author": "Sarah J. Maas",
+      "rating": 5,
+      "original_price": 1500,
+      "sale_price": 1100
+    },
+    {
+      "id": 4,
+      "image": "images/product-item4.png",
+      "title": "Midnight Library",
+      "url": "product-4.html",
+      "author": "Matt Haig",
+      "rating": 3,
+      "original_price": 900,
+      "sale_price": 720
+    },
+    {
+      "id": 5,
+      "image": "images/product-item5.png",
+      "title": "The Silent Patient",
+      "url": "product-5.html",
+      "author": "Alex Michaelides",
+      "rating": 5,
+      "original_price": 1100,
+      "sale_price": 950
+    },
+    {
+      "id": 6,
+      "image": "images/product-item6.png",
+      "title": "Circe",
+      "url": "product-6.html",
+      "author": "Madeline Miller",
+      "rating": 4,
+      "original_price": 1350,
+      "sale_price": 990
+    },
+    {
+      "id": 7,
+      "image": "images/product-item7.png",
+      "title": "Atomic Habits",
+      "url": "product-7.html",
+      "author": "James Clear",
+      "rating": 5,
+      "original_price": 1800,
+      "sale_price": 1400
+    },
+    {
+      "id": 8,
+      "image": "images/product-item8.png",
+      "title": "The Alchemist",
+      "url": "product-8.html",
+      "author": "Paulo Coelho",
+      "rating": 4,
+      "original_price": 800,
+      "sale_price": 650
+    },
+    {
+      "id": 9,
+      "image": "images/product-item9.png",
+      "title": "Project Hail Mary",
+      "url": "product-9.html",
+      "author": "Andy Weir",
+      "rating": 5,
+      "original_price": 1700,
+      "sale_price": 1250
+    },
+    {
+      "id": 10,
+      "image": "images/product-item10.png",
+      "title": "The Seven Husbands of Evelyn Hugo",
+      "url": "product-10.html",
+      "author": "Taylor Jenkins Reid",
+      "rating": 5,
+      "original_price": 1600,
+      "sale_price": 1150
+    },
+    {
+      "id": 11,
+      "image": "images/product-item11.png",
+      "title": "Dark Matter",
+      "url": "product-11.html",
+      "author": "Blake Crouch",
+      "rating": 4,
+      "original_price": 1450,
+      "sale_price": 1080
+    },
+    {
+      "id": 12,
+      "image": "images/product-item12.png",
+      "title": "Lessons in Chemistry",
+      "url": "product-12.html",
+      "author": "Bonnie Garmus",
+      "rating": 4,
+      "original_price": 1300,
+      "sale_price": 975
+    },
+    {
+      "id": 13,
+      "image": "images/product-item13.png",
+      "title": "Normal People",
+      "url": "product-13.html",
+      "author": "Sally Rooney",
+      "rating": 3,
+      "original_price": 1100,
+      "sale_price": 880
+    },
+    {
+      "id": 14,
+      "image": "images/product-item14.png",
+      "title": "Where the Crawdads Sing",
+      "url": "product-14.html",
+      "author": "Delia Owens",
+      "rating": 5,
+      "original_price": 1250,
+      "sale_price": 1000
+    },
+    {
+      "id": 15,
+      "image": "images/product-item15.png",
+      "title": "The Great Gatsby",
+      "url": "product-15.html",
+      "author": "F. Scott Fitzgerald",
+      "rating": 4,
+      "original_price": 700,
+      "sale_price": 500
+    },
+    {
+      "id": 16,
+      "image": "images/product-item16.png",
+      "title": "Tomorrow, and Tomorrow, and Tomorrow",
+      "url": "product-16.html",
+      "author": "Gabrielle Zevin",
+      "rating": 5,
+      "original_price": 1900,
+      "sale_price": 1550
+    },
+    {
+      "id": 17,
+      "image": "images/product-item17.png",
+      "title": "Dune",
+      "url": "product-17.html",
+      "author": "Frank Herbert",
+      "rating": 5,
+      "original_price": 2200,
+      "sale_price": 1800
+    },
+    {
+      "id": 18,
+      "image": "images/product-item18.png",
+      "title": "The Song of Achilles",
+      "url": "product-18.html",
+      "author": "Madeline Miller",
+      "rating": 4,
+      "original_price": 1300,
+      "sale_price": 950
+    },
+    {
+      "id": 19,
+      "image": "images/product-item19.png",
+      "title": "Verity",
+      "url": "product-19.html",
+      "author": "Colleen Hoover",
+      "rating": 4,
+      "original_price": 1150,
+      "sale_price": 890
+    },
+    {
+      "id": 20,
+      "image": "images/product-item20.png",
+      "title": "The Maid",
+      "url": "product-20.html",
+      "author": "Nita Prose",
+      "rating": 3,
+      "original_price": 1050,
+      "sale_price": 790
+    }
+  ]
+}

@@ -19,6 +19,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
   </head>
   <body>
+
     <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
       <symbol id="search" xmlns="http://www.w3.org/2000/symbolsvg" viewBox="0 0 24 24">
         <path fill="currentColor" fill-rule="evenodd"
@@ -588,6 +589,8 @@
           <h3 class="d-flex align-items-center">Best selling items</h3>
           <a href="index.html" class="btn">View All</a>
         </div>
+
+        <div id="product-container" class="row g-4 mb-5"></div>
         <div class="position-absolute top-50 end-0 pe-0 pe-xxl-5 me-0 me-xxl-5 swiper-next product-slider-button-next">
           <svg class="chevron-forward-circle d-flex justify-content-center align-items-center p-2" width="80" height="80">
             <use xlink:href="#alt-arrow-right-outline"></use>
@@ -598,7 +601,7 @@
             <use xlink:href="#alt-arrow-left-outline"></use>
           </svg>
         </div>
-        <div class="swiper product-swiper">
+        <div class="swiper product-swiper d-none">
           <div class="swiper-wrapper">
             <div class="swiper-slide">
               <div class="card position-relative p-4 border rounded-3">
