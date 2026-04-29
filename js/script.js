@@ -7,6 +7,10 @@
 (function($) {
     "use strict";
 
+    let allProducts = [];
+    let activeRatingFilter = "all";
+    let activeSearchQuery = "";
+
     // --- [1] ส่วนของ UI Components (โค้ดเดิมของคุณ) ---
 
     // ระบบ Search Popup
@@ -95,6 +99,195 @@
 
     // --- [2] ส่วนของระบบข้อมูล (Sequence: Request -> Fetch -> Render) ---
 
+    function normalizeText(value) {
+        return String(value || "")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9\s]/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+    }
+
+    function levenshteinDistance(left, right) {
+        const source = left || "";
+        const target = right || "";
+
+        if (!source.length) return target.length;
+        if (!target.length) return source.length;
+
+        const matrix = Array.from({ length: source.length + 1 }, (_, row) => [row]);
+
+        for (let column = 1; column <= target.length; column += 1) {
+            matrix[0][column] = column;
+        }
+
+        for (let row = 1; row <= source.length; row += 1) {
+            for (let column = 1; column <= target.length; column += 1) {
+                const substitutionCost = source[row - 1] === target[column - 1] ? 0 : 1;
+                matrix[row][column] = Math.min(
+                    matrix[row - 1][column] + 1,
+                    matrix[row][column - 1] + 1,
+                    matrix[row - 1][column - 1] + substitutionCost
+                );
+            }
+        }
+
+        return matrix[source.length][target.length];
+    }
+
+    function getRatingOptions(products) {
+        return [...new Set(products.map((product) => Number(product.rating) || 0).filter(Boolean))].sort((left, right) => right - left);
+    }
+
+    function scoreProduct(product, query) {
+        const title = normalizeText(product.title);
+        const author = normalizeText(product.author);
+        const combined = `${title} ${author}`.trim();
+        const tokens = query.split(" ").filter(Boolean);
+
+        if (!query) return 0;
+        if (combined.includes(query)) return 100;
+
+        let score = 0;
+        tokens.forEach((token) => {
+            if (combined.includes(token)) {
+                score += 2;
+            }
+        });
+
+        if (tokens.length) {
+            const titleTokens = title.split(" ");
+            const authorTokens = author.split(" ");
+            tokens.forEach((token) => {
+                if (titleTokens.some((word) => word.startsWith(token)) || authorTokens.some((word) => word.startsWith(token))) {
+                    score += 1;
+                }
+            });
+        }
+
+        const distance = levenshteinDistance(query, combined);
+        const similarity = 1 - (distance / Math.max(query.length, combined.length));
+
+        return score + similarity;
+    }
+
+    function getVisibleProducts(products) {
+        const normalizedQuery = normalizeText(activeSearchQuery);
+
+        let visibleProducts = products.filter((product) => {
+            if (activeRatingFilter === "all") return true;
+            return String(Number(product.rating) || 0) === String(activeRatingFilter);
+        });
+
+        if (!normalizedQuery) {
+            return visibleProducts;
+        }
+
+        const matchedProducts = visibleProducts
+            .map((product) => ({
+                ...product,
+                __score: scoreProduct(product, normalizedQuery),
+            }))
+            .filter((product) => product.__score > 0.85)
+            .sort((left, right) => right.__score - left.__score);
+
+        return matchedProducts;
+    }
+
+    function renderRatingFilters(products) {
+        const filterContainer = document.getElementById("rating-filters");
+        if (!filterContainer) return;
+
+        const ratings = getRatingOptions(products);
+        const buttons = [
+            `<button type="button" class="btn btn-outline-dark rating-filter-btn ${activeRatingFilter === "all" ? "active" : ""}" data-rating="all">All</button>`,
+            ...ratings.map((rating) => {
+                const label = rating === 1 ? "1 Star" : `${rating} Stars`;
+                return `<button type="button" class="btn btn-outline-dark rating-filter-btn ${String(activeRatingFilter) === String(rating) ? "active" : ""}" data-rating="${rating}">${label}</button>`;
+            }),
+        ];
+
+        filterContainer.innerHTML = buttons.join("");
+    }
+
+    function buildProductCard(product) {
+        let stars = "";
+        const rating = Number(product.rating) || 0;
+
+        for (let i = 0; i < rating; i += 1) {
+            stars += `<svg class="star star-fill"><use xlink:href="#star-fill"></use></svg>`;
+        }
+
+        const hasDiscount = Number(product.original_price) > Number(product.sale_price);
+
+        return `
+            <div class="col-12 col-sm-6 col-lg-3 mb-4">
+                <div class="card position-relative p-4 border rounded-3 h-100">
+                    ${hasDiscount ? '<div class="position-absolute"><p class="bg-primary py-1 px-3 fs-6 text-white rounded-2">Sale</p></div>' : ''}
+                    <img src="${product.image}" class="img-fluid shadow-sm" alt="${product.title}">
+                    <h6 class="mt-4 mb-0 fw-bold"><a href="${product.url}">${product.title}</a></h6>
+                    <div class="review-content d-flex">
+                        <p class="my-2 me-2 fs-6 text-black-50">${product.author}</p>
+                        <div class="rating text-warning d-flex align-items-center">${stars}</div>
+                    </div>
+                    <span class="price text-primary fw-bold mb-2 fs-5">
+                        <s class="text-black-50">$${product.original_price}</s> $${product.sale_price}
+                    </span>
+                </div>
+            </div>`;
+    }
+
+    function renderUI(products) {
+        console.log("Sequence: 3. renderUI() building HTML for", products.length, "items.");
+        const container = document.getElementById('product-container');
+        const message = document.getElementById('search-result-message');
+        if (!container) return;
+
+        renderRatingFilters(products);
+
+        const visibleProducts = getVisibleProducts(products);
+        const hasSearchQuery = Boolean(normalizeText(activeSearchQuery));
+
+        if (message) {
+            if (hasSearchQuery) {
+                message.innerHTML = visibleProducts.length
+                    ? `<div class="alert alert-light border mb-0">Showing ${visibleProducts.length} result(s) for <strong>${activeSearchQuery}</strong>.</div>`
+                    : '<div class="search-empty-state">Not found</div>';
+            } else {
+                message.innerHTML = '';
+            }
+        }
+
+        if (!visibleProducts.length) {
+            container.innerHTML = '';
+            return;
+        }
+
+        const ratingGroups = getRatingOptions(visibleProducts);
+        let html = '';
+
+        ratingGroups.forEach((rating) => {
+            const ratingProducts = visibleProducts.filter((product) => Number(product.rating) === rating);
+            if (!ratingProducts.length) return;
+
+            html += `
+                <div class="col-12 mb-2">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <h4 class="mb-0 catalog-group-title">${rating === 1 ? '1 Star' : `${rating} Stars`} category</h4>
+                        <span class="badge bg-primary rounded-pill">${ratingProducts.length}</span>
+                    </div>
+                </div>`;
+
+            ratingProducts.forEach((product) => {
+                html += buildProductCard(product);
+            });
+        });
+
+        container.innerHTML = html;
+        console.log("Sequence Complete: UI Rendered.");
+    }
+
     // ขั้นตอนที่ 1: สั่งการดึงข้อมูล
     window.requestProducts = function() {
         console.log("Sequence: 1. requestProducts() started.");
@@ -114,44 +307,10 @@
             });
         }, Promise.reject())
         .then((data) => {
-            const products = Array.isArray(data?.products) ? data.products : [];
-            renderUI(products);
+            allProducts = Array.isArray(data?.products) ? data.products : [];
+            renderUI(allProducts);
         })
         .catch((err) => console.error("Data Flow Error:", err));
-    }
-
-    // ขั้นตอนที่ 3: แสดงผลบนหน้าเว็บ
-    function renderUI(products) {
-        console.log("Sequence: 3. renderUI() building HTML for", products.length, "items.");
-        const container = document.getElementById('product-container');
-        if (!container) return;
-
-        let html = '';
-        products.forEach((product) => {
-            let stars = '';
-            for (let i = 0; i < (product.rating || 0); i++) {
-                stars += `<svg class="star star-fill"><use xlink:href="#star-fill"></use></svg>`;
-            }
-            const hasDiscount = Number(product.original_price) > Number(product.sale_price);
-
-            html += `
-                <div class="col-12 col-sm-6 col-lg-3 mb-4">
-                    <div class="card position-relative p-4 border rounded-3 h-100">
-                        ${hasDiscount ? '<div class="position-absolute"><p class="bg-primary py-1 px-3 fs-6 text-white rounded-2">Sale</p></div>' : ''}
-                        <img src="${product.image}" class="img-fluid shadow-sm" alt="${product.title}">
-                        <h6 class="mt-4 mb-0 fw-bold"><a href="${product.url}">${product.title}</a></h6>
-                        <div class="review-content d-flex">
-                            <p class="my-2 me-2 fs-6 text-black-50">${product.author}</p>
-                            <div class="rating text-warning d-flex align-items-center">${stars}</div>
-                        </div>
-                        <span class="price text-primary fw-bold mb-2 fs-5">
-                            <s class="text-black-50">$${product.original_price}</s> $${product.sale_price}
-                        </span>
-                    </div>
-                </div>`;
-        });
-        container.innerHTML = html;
-        console.log("Sequence Complete: UI Rendered.");
     }
 
     // --- [3] ส่วนเริ่มต้นการทำงาน (Initializers) ---
@@ -161,6 +320,18 @@
         searchPopup();
         initProductQty();
         countdownTimer();
+
+        $(document).on('submit', '.search-form', function(e) {
+            e.preventDefault();
+            activeSearchQuery = String($('#search-form').val() || '').trim();
+            $('.search-popup').removeClass('is-visible');
+            renderUI(allProducts);
+        });
+
+        $('#rating-filters').on('click', '.rating-filter-btn', function() {
+            activeRatingFilter = $(this).data('rating');
+            renderUI(allProducts);
+        });
 
         // รัน Swiper
         new Swiper(".main-swiper", {

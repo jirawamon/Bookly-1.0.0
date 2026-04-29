@@ -1079,6 +1079,30 @@ th{
   width: 28px;
 }
 
+.rating-filter-bar .rating-filter-btn {
+  border-radius: 999px;
+  padding: 0.6rem 1rem;
+}
+
+.rating-filter-bar .rating-filter-btn.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--white-color);
+}
+
+.catalog-group-title {
+  font-size: 1.35rem;
+}
+
+.search-empty-state {
+  border: 1px dashed var(--gray-color-500);
+  border-radius: 1rem;
+  background: var(--light-color);
+  padding: 1.5rem;
+  text-align: center;
+  font-weight: 600;
+}
+
 /* nav tabs */
 .nav-tabs .nav-link{
   color: var(--black-color);
