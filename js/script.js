@@ -11,6 +11,7 @@
     let activeRatingFilter = "all";
     let activeSearchQuery = "";
     let cartStorage = [];
+    let wishlistStorage = [];
 
     // Cart Management Functions
     function getCartTotal() {
@@ -90,6 +91,74 @@
             const removed = cartStorage.splice(cartIndex, 1);
             updateCartUI();
             console.log("Item removed from cart:", removed);
+        }
+    }
+
+    // Wishlist Management Functions
+    function getWishlistTotal() {
+        return wishlistStorage.reduce((sum, item) => {
+            return sum + (Number(item.price) || 0);
+        }, 0).toFixed(2);
+    }
+
+    function updateWishlistUI() {
+        const countBadge = document.querySelector('.wishlist-count-badge');
+        const countDisplay = document.querySelector('.wishlist-count-display');
+        const wishlistList = document.querySelector('.wishlist-storage');
+
+        if (countBadge) {
+            countBadge.textContent = wishlistStorage.length;
+        }
+        if (countDisplay) {
+            const paddedCount = String(wishlistStorage.length).padStart(2, '0');
+            countDisplay.textContent = `(${paddedCount})`;
+        }
+
+        if (wishlistList) {
+            let wishlistHTML = '';
+            wishlistStorage.forEach((item, index) => {
+                wishlistHTML += `
+                    <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center lh-sm wishlist-item" data-wishlist-index="${index}">
+                        <div style="flex: 1;">
+                            <h5 style="margin-bottom: 0.25rem;"><a href="#">${item.title}</a></h5>
+                            <a href="#" class="btn btn-xs btn-outline-primary btn-add-from-wishlist" data-wishlist-index="${index}" data-product-id="${item.id}" data-product-title="${item.title}" data-product-price="${item.price}" data-product-image="${item.image}" style="font-size: 0.65rem; padding: 0.125rem 0.5rem;">Add to cart</a>
+                        </div>
+                        <div class="d-flex flex-column align-items-end gap-1">
+                            <span class="text-primary fw-bold">$${Number(item.price).toFixed(2)}</span>
+                            <button type="button" class="btn btn-xs btn-outline-danger btn-remove-from-wishlist" data-wishlist-index="${index}" style="font-size: 0.65rem; padding: 0.125rem 0.5rem;">Remove</button>
+                        </div>
+                    </li>`;
+            });
+            wishlistHTML += `
+                    <li class="list-group-item bg-transparent d-flex justify-content-between wishlist-total-row">
+                        <span class="text-capitalize"><b>Total (USD)</b></span>
+                        <strong class="wishlist-total-price">$${getWishlistTotal()}</strong>
+                    </li>`;
+            wishlistList.innerHTML = wishlistHTML;
+        }
+    }
+
+    function addToWishlist(productId, title, price, image) {
+        const existingItem = wishlistStorage.find((item) => Number(item.id) === Number(productId));
+        if (!existingItem) {
+            const newItem = {
+                id: productId,
+                title: title,
+                price: price,
+                image: image,
+                addedAt: new Date().toISOString()
+            };
+            wishlistStorage.push(newItem);
+            console.log("Item added to wishlist:", newItem);
+        }
+        updateWishlistUI();
+    }
+
+    function removeFromWishlist(wishlistIndex) {
+        if (wishlistIndex >= 0 && wishlistIndex < wishlistStorage.length) {
+            const removed = wishlistStorage.splice(wishlistIndex, 1);
+            updateWishlistUI();
+            console.log("Item removed from wishlist:", removed);
         }
     }
 
@@ -320,9 +389,9 @@
                         <button type="button" class="btn btn-dark add-to-cart" data-product-id="${product.id}" data-product-title="${product.title}" data-product-price="${product.sale_price}" data-product-image="${product.image}">
                             <svg class="cart"><use xlink:href="#cart"></use></svg>
                         </button>
-                        <a href="#" class="btn btn-dark">
+                        <button type="button" class="btn btn-dark btn-add-to-wishlist" data-product-id="${product.id}" data-product-title="${product.title}" data-product-price="${product.sale_price}" data-product-image="${product.image}">
                             <span><svg class="wishlist"><use xlink:href="#heart"></use></svg></span>
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>`;
@@ -451,6 +520,30 @@
             }
         });
 
+        $(document).on('click', '.btn-add-to-wishlist', function(e) {
+            e.preventDefault();
+            const productId = $(this).data('product-id');
+            const productTitle = $(this).data('product-title');
+            const productPrice = $(this).data('product-price');
+            const productImage = $(this).data('product-image');
+            addToWishlist(productId, productTitle, productPrice, productImage);
+        });
+
+        $(document).on('click', '.btn-remove-from-wishlist', function(e) {
+            e.preventDefault();
+            const wishlistIndex = $(this).data('wishlist-index');
+            removeFromWishlist(wishlistIndex);
+        });
+
+        $(document).on('click', '.btn-add-from-wishlist', function(e) {
+            e.preventDefault();
+            const productId = $(this).data('product-id');
+            const productTitle = $(this).data('product-title');
+            const productPrice = $(this).data('product-price');
+            const productImage = $(this).data('product-image');
+            addToCart(productId, productTitle, productPrice, productImage);
+        });
+
         $(document).on('submit', '.search-form', function(e) {
             e.preventDefault();
             activeSearchQuery = String($('#search-form').val() || '').trim();
@@ -480,6 +573,9 @@
 
         // Initialize cart UI
         updateCartUI();
+
+        // Initialize wishlist UI
+        updateWishlistUI();
 
         /* Video Modal Logic */
         var $videoSrc;  
