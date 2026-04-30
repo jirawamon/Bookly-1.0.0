@@ -10,6 +10,88 @@
     let allProducts = [];
     let activeRatingFilter = "all";
     let activeSearchQuery = "";
+    let cartStorage = [];
+
+    // Cart Management Functions
+    function getCartTotal() {
+        return cartStorage.reduce((sum, item) => {
+            const quantity = item.quantity || 1;
+            return sum + (Number(item.price) || 0) * quantity;
+        }, 0).toFixed(2);
+    }
+
+    function updateCartUI() {
+        const countBadge = document.querySelector('.cart-count-badge');
+        const countDisplay = document.querySelector('.cart-count-display');
+        const cartList = document.querySelector('.cart-storage');
+
+        const totalQuantity = cartStorage.reduce((sum, item) => sum + (item.quantity || 1), 0);
+
+        if (countBadge) {
+            countBadge.textContent = cartStorage.length;
+        }
+        if (countDisplay) {
+            const paddedCount = String(totalQuantity).padStart(2, '0');
+            countDisplay.textContent = `(${paddedCount})`;
+        }
+
+        if (cartList) {
+            let cartHTML = '';
+            cartStorage.forEach((item, index) => {
+                const quantity = item.quantity || 1;
+                const itemTotal = (Number(item.price) * quantity).toFixed(2);
+                cartHTML += `
+                    <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center lh-sm cart-item" data-cart-index="${index}">
+                        <div style="flex: 1;">
+                            <h5 style="margin-bottom: 0.25rem;"><a href="#">${item.title}</a></h5>
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="button" class="btn btn-outline-secondary btn-sm px-2 py-0 btn-decrease-qty" data-cart-index="${index}" style="font-size: 0.75rem; padding: 0.125rem 0.375rem !important;">−</button>
+                                <small style="min-width: 30px; text-align: center;">Qty: ${quantity}</small>
+                                <button type="button" class="btn btn-outline-secondary btn-sm px-2 py-0 btn-increase-qty" data-cart-index="${index}" style="font-size: 0.75rem; padding: 0.125rem 0.375rem !important;">+</button>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column align-items-end gap-1">
+                            <span class="text-primary fw-bold">$${itemTotal}</span>
+                            <button type="button" class="btn btn-xs btn-outline-danger btn-remove-from-cart" data-cart-index="${index}" style="font-size: 0.65rem; padding: 0.125rem 0.5rem;">Remove</button>
+                        </div>
+                    </li>`;
+            });
+            cartHTML += `
+                    <li class="list-group-item bg-transparent d-flex justify-content-between cart-total-row">
+                        <span class="text-capitalize"><b>Total (USD)</b></span>
+                        <strong class="cart-total-price">$${getCartTotal()}</strong>
+                    </li>`;
+            cartList.innerHTML = cartHTML;
+        }
+    }
+
+    function addToCart(productId, title, price, image) {
+        const existingItem = cartStorage.find((item) => Number(item.id) === Number(productId));
+        if (existingItem) {
+            existingItem.quantity = (existingItem.quantity || 1) + 1;
+            console.log("Item quantity updated:", existingItem);
+        } else {
+            const newItem = {
+                id: productId,
+                title: title,
+                price: price,
+                image: image,
+                quantity: 1,
+                addedAt: new Date().toISOString()
+            };
+            cartStorage.push(newItem);
+            console.log("Item added to cart:", newItem);
+        }
+        updateCartUI();
+    }
+
+    function removeFromCart(cartIndex) {
+        if (cartIndex >= 0 && cartIndex < cartStorage.length) {
+            const removed = cartStorage.splice(cartIndex, 1);
+            updateCartUI();
+            console.log("Item removed from cart:", removed);
+        }
+    }
 
     // --- [1] ส่วนของ UI Components (โค้ดเดิมของคุณ) ---
 
@@ -234,6 +316,14 @@
                     <span class="price text-primary fw-bold mb-2 fs-5">
                         <s class="text-black-50">$${product.original_price}</s> $${product.sale_price}
                     </span>
+                    <div class="card-concern position-absolute start-0 end-0 d-flex gap-2">
+                        <button type="button" class="btn btn-dark add-to-cart" data-product-id="${product.id}" data-product-title="${product.title}" data-product-price="${product.sale_price}" data-product-image="${product.image}">
+                            <svg class="cart"><use xlink:href="#cart"></use></svg>
+                        </button>
+                        <a href="#" class="btn btn-dark">
+                            <span><svg class="wishlist"><use xlink:href="#heart"></use></svg></span>
+                        </a>
+                    </div>
                 </div>
             </div>`;
     }
@@ -321,6 +411,46 @@
         initProductQty();
         countdownTimer();
 
+        $(document).on('click', '.add-to-cart', function(e) {
+            e.preventDefault();
+            const productId = $(this).data('product-id');
+            const productTitle = $(this).data('product-title');
+            const productPrice = $(this).data('product-price');
+            const productImage = $(this).data('product-image');
+            addToCart(productId, productTitle, productPrice, productImage);
+        });
+
+        $(document).on('click', '.btn-remove-from-cart', function(e) {
+            e.preventDefault();
+            const cartIndex = $(this).data('cart-index');
+            removeFromCart(cartIndex);
+        });
+
+        $(document).on('click', '.btn-increase-qty', function(e) {
+            e.preventDefault();
+            const cartIndex = $(this).data('cart-index');
+            if (cartIndex >= 0 && cartIndex < cartStorage.length) {
+                cartStorage[cartIndex].quantity = (cartStorage[cartIndex].quantity || 1) + 1;
+                updateCartUI();
+                console.log("Quantity increased for item at index:", cartIndex);
+            }
+        });
+
+        $(document).on('click', '.btn-decrease-qty', function(e) {
+            e.preventDefault();
+            const cartIndex = $(this).data('cart-index');
+            if (cartIndex >= 0 && cartIndex < cartStorage.length) {
+                const currentQty = cartStorage[cartIndex].quantity || 1;
+                if (currentQty > 1) {
+                    cartStorage[cartIndex].quantity = currentQty - 1;
+                } else {
+                    removeFromCart(cartIndex);
+                }
+                updateCartUI();
+                console.log("Quantity decreased for item at index:", cartIndex);
+            }
+        });
+
         $(document).on('submit', '.search-form', function(e) {
             e.preventDefault();
             activeSearchQuery = String($('#search-form').val() || '').trim();
@@ -347,6 +477,9 @@
 
         // เริ่มดึงข้อมูลสินค้ามาแสดงผล
         requestProducts();
+
+        // Initialize cart UI
+        updateCartUI();
 
         /* Video Modal Logic */
         var $videoSrc;  
