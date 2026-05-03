@@ -6,6 +6,7 @@
       "title": "The Phoenix Chronicles",
       "url": "product-1.html",
       "author": "Lauren Asher",
+      "category": "5-star",
       "rating": 5,
       "original_price": 1666,
       "sale_price": 999
@@ -16,6 +17,7 @@
       "title": "Shadow of the Wind",
       "url": "product-2.html",
       "author": "Carlos Ruiz Zafón",
+      "category": "4-star",
       "rating": 4,
       "original_price": 1200,
       "sale_price": 850
@@ -26,6 +28,7 @@
       "title": "Echoes of Eternity",
       "url": "product-3.html",
       "author": "Sarah J. Maas",
+      "category": "3-star",
       "rating": 5,
       "original_price": 1500,
       "sale_price": 1100
@@ -36,6 +39,7 @@
       "title": "Midnight Library",
       "url": "product-4.html",
       "author": "Matt Haig",
+      "category": "2-star",
       "rating": 3,
       "original_price": 900,
       "sale_price": 720
@@ -46,6 +50,7 @@
       "title": "The Silent Patient",
       "url": "product-5.html",
       "author": "Alex Michaelides",
+      "category": "1-star",
       "rating": 5,
       "original_price": 1100,
       "sale_price": 950
@@ -56,6 +61,7 @@
       "title": "Circe",
       "url": "product-6.html",
       "author": "Madeline Miller",
+      "category": "Mythology",
       "rating": 4,
       "original_price": 1350,
       "sale_price": 990
@@ -66,6 +72,7 @@
       "title": "Atomic Habits",
       "url": "product-7.html",
       "author": "James Clear",
+      "category": "Self-Help",
       "rating": 5,
       "original_price": 1800,
       "sale_price": 1400
@@ -76,6 +83,7 @@
       "title": "The Alchemist",
       "url": "product-8.html",
       "author": "Paulo Coelho",
+      "category": "Fiction",
       "rating": 4,
       "original_price": 800,
       "sale_price": 650
@@ -86,6 +94,7 @@
       "title": "Project Hail Mary",
       "url": "product-9.html",
       "author": "Andy Weir",
+      "category": "Sci-Fi",
       "rating": 5,
       "original_price": 1700,
       "sale_price": 1250
@@ -96,6 +105,7 @@
       "title": "The Seven Husbands of Evelyn Hugo",
       "url": "product-10.html",
       "author": "Taylor Jenkins Reid",
+      "category": "Romance",
       "rating": 5,
       "original_price": 1600,
       "sale_price": 1150
@@ -106,6 +116,7 @@
       "title": "Dark Matter",
       "url": "product-11.html",
       "author": "Blake Crouch",
+      "category": "Sci-Fi",
       "rating": 4,
       "original_price": 1450,
       "sale_price": 1080
@@ -116,6 +127,7 @@
       "title": "Lessons in Chemistry",
       "url": "product-12.html",
       "author": "Bonnie Garmus",
+      "category": "Fiction",
       "rating": 4,
       "original_price": 1300,
       "sale_price": 975
@@ -126,6 +138,7 @@
       "title": "Normal People",
       "url": "product-13.html",
       "author": "Sally Rooney",
+      "category": "Romance",
       "rating": 3,
       "original_price": 1100,
       "sale_price": 880
@@ -136,6 +149,7 @@
       "title": "Where the Crawdads Sing",
       "url": "product-14.html",
       "author": "Delia Owens",
+      "category": "Fiction",
       "rating": 5,
       "original_price": 1250,
       "sale_price": 1000
@@ -146,6 +160,7 @@
       "title": "The Great Gatsby",
       "url": "product-15.html",
       "author": "F. Scott Fitzgerald",
+      "category": "Classic",
       "rating": 4,
       "original_price": 700,
       "sale_price": 500
@@ -156,6 +171,7 @@
       "title": "Tomorrow, and Tomorrow, and Tomorrow",
       "url": "product-16.html",
       "author": "Gabrielle Zevin",
+      "category": "Fiction",
       "rating": 5,
       "original_price": 1900,
       "sale_price": 1550
@@ -166,6 +182,7 @@
       "title": "Dune",
       "url": "product-17.html",
       "author": "Frank Herbert",
+      "category": "Sci-Fi",
       "rating": 5,
       "original_price": 2200,
       "sale_price": 1800
@@ -176,6 +193,7 @@
       "title": "The Song of Achilles",
       "url": "product-18.html",
       "author": "Madeline Miller",
+      "category": "Mythology",
       "rating": 4,
       "original_price": 1300,
       "sale_price": 950
@@ -186,6 +204,7 @@
       "title": "Verity",
       "url": "product-19.html",
       "author": "Colleen Hoover",
+      "category": "Thriller",
       "rating": 4,
       "original_price": 1150,
       "sale_price": 890
@@ -196,6 +215,7 @@
       "title": "The Maid",
       "url": "product-20.html",
       "author": "Nita Prose",
+      "category": "Mystery",
       "rating": 3,
       "original_price": 1050,
       "sale_price": 790
