@@ -1,0 +1,77 @@
+[
+  {
+    "id": 1,
+    "email": "admin@gmail.com",
+    "password": "$2b$10$SmJE.QtbcIQgK6eO734MxuaeFnOIU3X9Nw5K1nmK7trzWHqoFQuwO"
+  [
+    {
+      "id": 1,
+      "email": "user1@example.com",
+      "password": "47b7bfb65fa83ac9a71dcb0f6296bb6e",
+      "firstName": "User1",
+      "registeredAt": "2026-05-04"
+    },
+    {
+      "id": 2,
+      "email": "user2@example.com",
+      "password": "d593af313e9f50afcdb9ee1baa23092a",
+      "firstName": "User2",
+      "registeredAt": "2026-05-04"
+    },
+    {
+      "id": 3,
+      "email": "user3@example.com",
+      "password": "e92d7e2f0053d14f3defa15acc3ecdff",
+      "firstName": "User3",
+      "registeredAt": "2026-05-04"
+    },
+    {
+      "id": 4,
+      "email": "user4@example.com",
+      "password": "9d580f85ef31ece5d3c333e126cd36f3",
+      "firstName": "User4",
+      "registeredAt": "2026-05-04"
+    },
+    {
+      "id": 5,
+      "email": "user5@example.com",
+      "password": "92599641246f4a3a38c64eec0a945e5e",
+      "firstName": "User5",
+      "registeredAt": "2026-05-04"
+    },
+    {
+      "id": 6,
+      "email": "user6@example.com",
+      "password": "6675fabedd3d7fd9a52bf55dbb229d22",
+      "firstName": "User6",
+      "registeredAt": "2026-05-04"
+    },
+    {
+      "id": 7,
+      "email": "user7@example.com",
+      "password": "19f16ed9c12474c461689dd8a5e84f38",
+      "firstName": "User7",
+      "registeredAt": "2026-05-04"
+    },
+    {
+      "id": 8,
+      "email": "user8@example.com",
+      "password": "e37def79ed0c0f883019fa5ecb826ad1",
+      "firstName": "User8",
+      "registeredAt": "2026-05-04"
+    },
+    {
+      "id": 9,
+      "email": "user9@example.com",
+      "password": "c389b116aff904b4aa49574125549f0b",
+      "firstName": "User9",
+      "registeredAt": "2026-05-04"
+    },
+    {
+      "id": 10,
+      "email": "user10@example.com",
+      "password": "debbd336cd8850c7123d7c838a5e1ffd",
+      "firstName": "User10",
+      "registeredAt": "2026-05-04"
+    }
+  ]
