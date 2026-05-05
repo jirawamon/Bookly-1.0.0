@@ -206,7 +206,7 @@
 
     function isValidCreditCard(cardNumber) {
         const digits = String(cardNumber || '').replace(/\D/g, '');
-        if (digits.length < 12 || digits.length > 19) return false;
+        if (digits.length !== 16) return false;
 
         let sum = 0;
         let shouldDouble = false;
@@ -697,12 +697,12 @@
 
             const isLoggedIn = Boolean(localStorage.getItem(AUTH_TOKEN_KEY));
             if (!isLoggedIn) {
-                alert('Please log in.');
+                alert('please Login frist');
                 return;
             }
 
             if (!cartStorage.length) {
-                alert('Your cart is empty.');
+                alert('cart is empty');
                 return;
             }
 
@@ -717,13 +717,8 @@
             e.preventDefault();
 
             const cardNumber = $('#checkout-card-number').val();
-            if (!cardNumber) {
-                alert('Please enter your credit card number.');
-                return;
-            }
-
             if (!isValidCreditCard(cardNumber)) {
-                alert('Invalid credit card number.');
+                alert('error');
                 return;
             }
             const email = localStorage.getItem(AUTH_EMAIL_KEY) || '';

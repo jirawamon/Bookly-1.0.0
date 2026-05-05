@@ -1193,6 +1193,17 @@ th{
   color: #111;
 }
 
+.site-header .user-name-display {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #111;
+  white-space: nowrap;
+}
+
+.site-header .btn-logout {
+  line-height: 1;
+}
+
 @media only screen and (max-width: 991px) {
   #navbar .user-items {
     display: none;
