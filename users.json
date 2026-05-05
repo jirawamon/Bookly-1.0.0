@@ -1,13 +1,9 @@
-[
-  {
-    "id": 1,
-    "email": "admin@gmail.com",
-    "password": "$2b$10$SmJE.QtbcIQgK6eO734MxuaeFnOIU3X9Nw5K1nmK7trzWHqoFQuwO"
+
   [
     {
       "id": 1,
       "email": "user1@example.com",
-      "password": "47b7bfb65fa83ac9a71dcb0f6296bb6e",
+      "password": "$2b$10$zYwEYfGoibwFSL/YhOPWNeFKKbocxrxWhw4h4iykX4dyhxSyKNJNW",
       "firstName": "User1",
       "registeredAt": "2026-05-04"
     },

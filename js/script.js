@@ -12,6 +12,52 @@
     let activeSearchQuery = "";
     let cartStorage = [];
     let wishlistStorage = [];
+    const CART_STORAGE_KEY = "cartStorage";
+    const WISHLIST_STORAGE_KEY = "wishlistStorage";
+    const AUTH_TOKEN_KEY = "authToken";
+    const AUTH_EMAIL_KEY = "authEmail";
+    const AUTH_NAME_KEY = "authFirstName";
+    const ORDER_STORAGE_KEY = "orderStorage";
+
+    function loadStorageArray(key) {
+        try {
+            const raw = localStorage.getItem(key);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (err) {
+            return [];
+        }
+    }
+
+    function saveStorageArray(key, value) {
+        try {
+            localStorage.setItem(key, JSON.stringify(value || []));
+        } catch (err) {
+            console.warn("Failed to persist storage", key, err);
+        }
+    }
+
+    function setUserLoggedIn(isLoggedIn) {
+        const userIcon = document.querySelector('.user-items svg.user');
+        const nameDisplay = document.querySelector('.user-items .user-name-display');
+        const logoutButton = document.querySelector('.user-items .btn-logout');
+        if (userIcon) {
+            userIcon.classList.toggle('user-logged-in', Boolean(isLoggedIn));
+        }
+        if (nameDisplay) {
+            if (isLoggedIn) {
+                const storedName = localStorage.getItem(AUTH_NAME_KEY) || '';
+                nameDisplay.textContent = storedName;
+                nameDisplay.classList.toggle('d-none', !storedName);
+            } else {
+                nameDisplay.textContent = '';
+                nameDisplay.classList.add('d-none');
+            }
+        }
+        if (logoutButton) {
+            logoutButton.classList.toggle('d-none', !isLoggedIn);
+        }
+    }
 
     // Cart Management Functions
     function getCartTotal() {
@@ -64,6 +110,8 @@
                     </li>`;
             cartList.innerHTML = cartHTML;
         }
+
+        saveStorageArray(CART_STORAGE_KEY, cartStorage);
     }
 
     function addToCart(productId, title, price, image) {
@@ -136,6 +184,8 @@
                     </li>`;
             wishlistList.innerHTML = wishlistHTML;
         }
+
+        saveStorageArray(WISHLIST_STORAGE_KEY, wishlistStorage);
     }
 
     function addToWishlist(productId, title, price, image) {
@@ -152,6 +202,42 @@
             console.log("Item added to wishlist:", newItem);
         }
         updateWishlistUI();
+    }
+
+    function isValidCreditCard(cardNumber) {
+        const digits = String(cardNumber || '').replace(/\D/g, '');
+        if (digits.length < 12 || digits.length > 19) return false;
+
+        let sum = 0;
+        let shouldDouble = false;
+
+        for (let i = digits.length - 1; i >= 0; i -= 1) {
+            let digit = Number(digits[i]);
+            if (shouldDouble) {
+                digit *= 2;
+                if (digit > 9) digit -= 9;
+            }
+            sum += digit;
+            shouldDouble = !shouldDouble;
+        }
+
+        return sum % 10 === 0;
+    }
+
+    function createOrderLocally() {
+        const orders = loadStorageArray(ORDER_STORAGE_KEY);
+        const total = Number(getCartTotal());
+
+        const order = {
+            id: Date.now(),
+            email: localStorage.getItem(AUTH_EMAIL_KEY) || null,
+            items: cartStorage.map((item) => ({ ...item })),
+            total,
+            createdAt: new Date().toISOString()
+        };
+
+        orders.push(order);
+        saveStorageArray(ORDER_STORAGE_KEY, orders);
     }
 
     function removeFromWishlist(wishlistIndex) {
@@ -551,9 +637,129 @@
             renderUI(allProducts);
         });
 
+        $('#login-form').on('submit', function(e) {
+            e.preventDefault();
+
+            const email = String($('#login-email').val() || '').trim();
+            const password = String($('#login-password').val() || '').trim();
+            const messageEl = $('#login-message');
+
+            if (!email || !password) {
+                messageEl.removeClass('d-none text-success').addClass('text-danger');
+                messageEl.text('Please enter email and password.');
+                return;
+            }
+
+            messageEl.removeClass('text-success text-danger').addClass('d-none');
+
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            })
+            .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
+            .then(({ ok, data }) => {
+                if (!ok || !data?.token) {
+                    throw new Error(data?.message || 'Login failed.');
+                }
+
+                localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+                localStorage.setItem(AUTH_EMAIL_KEY, email);
+                localStorage.setItem(AUTH_NAME_KEY, data.firstName || '');
+                setUserLoggedIn(true);
+
+                messageEl.removeClass('d-none text-danger').addClass('text-success');
+                messageEl.text('Login successful.');
+
+                $('#login-password').val('');
+            })
+            .catch((err) => {
+                messageEl.removeClass('d-none text-success').addClass('text-danger');
+                messageEl.text(err.message || 'Login failed.');
+            });
+        });
+
+        $(document).on('click', '.btn-logout', function(e) {
+            e.preventDefault();
+            localStorage.removeItem(AUTH_TOKEN_KEY);
+            localStorage.removeItem(AUTH_EMAIL_KEY);
+            localStorage.removeItem(AUTH_NAME_KEY);
+            setUserLoggedIn(false);
+        });
+
         $('#rating-filters').on('click', '.rating-filter-btn', function() {
             activeRatingFilter = $(this).data('rating');
             renderUI(allProducts);
+        });
+
+        $(document).on('click', '.btn-checkout', function(e) {
+            e.preventDefault();
+
+            const isLoggedIn = Boolean(localStorage.getItem(AUTH_TOKEN_KEY));
+            if (!isLoggedIn) {
+                alert('Please log in.');
+                return;
+            }
+
+            if (!cartStorage.length) {
+                alert('Your cart is empty.');
+                return;
+            }
+
+            const modalElement = document.getElementById('checkoutModal');
+            if (modalElement && window.bootstrap && window.bootstrap.Modal) {
+                const modal = window.bootstrap.Modal.getOrCreateInstance(modalElement);
+                modal.show();
+            }
+        });
+
+        $(document).on('submit', '#checkout-form', function(e) {
+            e.preventDefault();
+
+            const cardNumber = $('#checkout-card-number').val();
+            if (!cardNumber) {
+                alert('Please enter your credit card number.');
+                return;
+            }
+
+            if (!isValidCreditCard(cardNumber)) {
+                alert('Invalid credit card number.');
+                return;
+            }
+            const email = localStorage.getItem(AUTH_EMAIL_KEY) || '';
+
+            fetch('/api/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    cartItems: cartStorage,
+                    email,
+                    cardNumber
+                })
+            })
+            .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
+            .then(({ ok, data }) => {
+                if (!ok) {
+                    const messages = Object.values(data?.errors || {}).filter(Boolean);
+                    throw new Error(messages.join(' ') || 'Checkout failed.');
+                }
+
+                createOrderLocally();
+                cartStorage = [];
+                updateCartUI();
+
+                const modalElement = document.getElementById('checkoutModal');
+                if (modalElement && window.bootstrap && window.bootstrap.Modal) {
+                    const modal = window.bootstrap.Modal.getOrCreateInstance(modalElement);
+                    modal.hide();
+                }
+
+                $('#checkout-card-number').val('');
+                alert('Order created.');
+            })
+            .catch((err) => {
+                alert(err.message || 'Checkout failed.');
+            });
         });
 
         // รัน Swiper
@@ -570,6 +776,10 @@
 
         // เริ่มดึงข้อมูลสินค้ามาแสดงผล
         requestProducts();
+
+        cartStorage = loadStorageArray(CART_STORAGE_KEY);
+        wishlistStorage = loadStorageArray(WISHLIST_STORAGE_KEY);
+        setUserLoggedIn(Boolean(localStorage.getItem(AUTH_TOKEN_KEY)));
 
         // Initialize cart UI
         updateCartUI();

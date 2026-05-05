@@ -16,6 +16,69 @@ app.use(express.json());
 // API routes
 app.use('/api/products', productsRouter);
 
+app.post('/api/checkout', (req, res) => {
+   const { cartItems, email, cardNumber } = req.body || {};
+   const errors = {};
+
+   if (!Array.isArray(cartItems) || cartItems.length === 0) {
+      errors.cartItems = 'Cart is empty.';
+   } else {
+      const hasInvalidItem = cartItems.some((item) => {
+         const price = Number(item?.price);
+         const quantity = Number(item?.quantity ?? 1);
+         return !Number.isFinite(price) || price < 0 || !Number.isFinite(quantity) || quantity <= 0;
+      });
+      if (hasInvalidItem) {
+         errors.cartItems = 'Cart items are invalid.';
+      }
+   }
+
+   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+   if (!email || !emailRegex.test(String(email).trim())) {
+      errors.email = 'Email is invalid.';
+   }
+
+   const digits = String(cardNumber || '').replace(/\D/g, '');
+   if (digits.length !== 16) {
+      errors.cardNumber = 'Credit card number must be 16 digits.';
+   }
+
+   if (Object.keys(errors).length) {
+      return res.status(400).json({ success: false, errors });
+   }
+
+   const total = cartItems.reduce((sum, item) => {
+      const price = Number(item.price);
+      const quantity = Number(item.quantity ?? 1);
+      return sum + price * quantity;
+   }, 0);
+
+   try {
+      const ordersPath = path.join(__dirname, 'orders.json');
+      const existing = fs.existsSync(ordersPath)
+         ? JSON.parse(fs.readFileSync(ordersPath, 'utf8'))
+         : [];
+
+      const order = {
+         id: Date.now(),
+         email: String(email).trim(),
+         items: cartItems,
+         total: Number(total.toFixed(2)),
+         createdAt: new Date().toISOString()
+      };
+
+      existing.push(order);
+      fs.writeFileSync(ordersPath, JSON.stringify(existing, null, 2));
+
+      return res.status(200).json({ success: true, orderId: order.id, total: order.total });
+   } catch (err) {
+      return res.status(400).json({
+         success: false,
+         errors: { order: 'Save order failed.' }
+      });
+   }
+});
+
 /*
 =====================================
 STEP 1
@@ -179,7 +242,9 @@ app.post('/api/login', async (req, res) => {
    );
 
    res.status(200).json({
-      token
+      token,
+      firstName: user.firstName,
+      email: user.email
    });
 
 });

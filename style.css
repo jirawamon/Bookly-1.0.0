@@ -1189,6 +1189,10 @@ th{
   cursor: pointer;
 }
 
+.site-header .user-items svg.user.user-logged-in {
+  color: #111;
+}
+
 @media only screen and (max-width: 991px) {
   #navbar .user-items {
     display: none;

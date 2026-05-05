@@ -292,6 +292,8 @@
                         <use xlink:href="#user"></use>
                       </svg>
                     </a>
+                    <span class="user-name-display ms-2 small fw-semibold d-none"></span>
+                    <button type="button" class="btn btn-sm btn-outline-dark ms-2 btn-logout d-none">Logout</button>
                     <!-- Modal -->
                     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
                       aria-hidden="true">
@@ -315,41 +317,56 @@
                               <div class="tab-content" id="nav-tabContent">
                                 <div class="tab-pane fade active show" id="nav-sign-in" role="tabpanel"
                                   aria-labelledby="nav-sign-in-tab">
-                                  <div class="form-group py-3">
-                                    <label class="mb-2" for="sign-in">Username or email address *</label>
-                                    <input type="text" minlength="2" name="username" placeholder="Your Username"
-                                      class="form-control w-100 rounded-3 p-3" required>
-                                  </div>
-                                  <div class="form-group pb-3">
-                                    <label class="mb-2" for="sign-in">Password *</label>
-                                    <input type="password" minlength="2" name="password" placeholder="Your Password"
-                                      class="form-control w-100 rounded-3 p-3" required>
-                                  </div>
-                                  <label class="py-3">
-                                    <input type="checkbox" required="" class="d-inline">
-                                    <span class="label-body">Remember me</span>
-                                    <span class="label-body"><a href="#" class="fw-bold">Forgot Password</a></span>
-                                  </label>
-                                  <button type="submit" name="submit" class="btn btn-dark w-100 my-3">Login</button>
+                                  <!-- Login form (uses LocalStorage users) -->
+                                  <form id="login-form" novalidate>
+                                    <div class="form-group py-3">
+                                      <label class="mb-2" for="login-email">Username or email address *</label>
+                                      <input type="email" minlength="2" name="loginEmail" id="login-email"
+                                        placeholder="Your Email Address" class="form-control w-100 rounded-3 p-3" required>
+                                    </div>
+                                    <div class="form-group pb-3">
+                                      <label class="mb-2" for="login-password">Password *</label>
+                                      <input type="password" minlength="2" name="loginPassword" id="login-password"
+                                        placeholder="Your Password" class="form-control w-100 rounded-3 p-3" required>
+                                    </div>
+                                    <label class="py-3">
+                                      <input type="checkbox" required="" class="d-inline">
+                                      <span class="label-body">Remember me</span>
+                                      <span class="label-body"><a href="#" class="fw-bold">Forgot Password</a></span>
+                                    </label>
+                                    <!-- Login message area -->
+                                    <div id="login-message" class="small mt-2 d-none"></div>
+                                    <button type="submit" name="submit" class="btn btn-dark w-100 my-3 pe-3">Login</button>
+                                  </form>
                                 </div>
                                 <div class="tab-pane fade" id="nav-register" role="tabpanel"
                                   aria-labelledby="nav-register-tab">
-                                  <div class="form-group py-3">
-                                    <label class="mb-2" for="register">Your email address *</label>
-                                    <input type="text" minlength="2" name="username" placeholder="Your Email Address"
-                                      class="form-control w-100 rounded-3 p-3" required>
-                                  </div>
-                                  <div class="form-group pb-3">
-                                    <label class="mb-2" for="sign-in">Password *</label>
-                                    <input type="password" minlength="2" name="password" placeholder="Your Password"
-                                      class="form-control w-100 rounded-3 p-3" required>
-                                  </div>
-                                  <label class="py-3">
-                                    <input type="checkbox" required="" class="d-inline">
-                                    <span class="label-body">I agree to the <a href="#" class="fw-bold">Privacy
-                                        Policy</a></span>
-                                  </label>
-                                  <button type="submit" name="submit" class="btn btn-dark w-100 my-3">Register</button>
+                                  <!-- Register form (creates LocalStorage users) -->
+                                  <form id="register-form" novalidate>
+                                    <div class="form-group py-3">
+                                      <label class="mb-2" for="register-name">Full Name *</label>
+                                      <input type="text" minlength="2" name="registerName" id="register-name"
+                                        placeholder="Your Full Name" class="form-control w-100 rounded-3 p-3" required>
+                                    </div>
+                                    <div class="form-group pb-3">
+                                      <label class="mb-2" for="register-email">Your email address *</label>
+                                      <input type="email" minlength="2" name="registerEmail" id="register-email"
+                                        placeholder="Your Email Address" class="form-control w-100 rounded-3 p-3" required>
+                                    </div>
+                                    <div class="form-group pb-3">
+                                      <label class="mb-2" for="register-password">Password *</label>
+                                      <input type="password" minlength="2" name="registerPassword" id="register-password"
+                                        placeholder="Your Password" class="form-control w-100 rounded-3 p-3" required>
+                                    </div>
+                                    <label class="py-3">
+                                      <input type="checkbox" required="" class="d-inline">
+                                      <span class="label-body">I agree to the <a href="#" class="fw-bold">Privacy
+                                          Policy</a></span>
+                                    </label>
+                                    <!-- Register message area -->
+                                    <div id="register-message" class="small mt-2 d-none"></div>
+                                    <button type="submit" name="submit" class="btn btn-dark w-100 my-3">Register</button>
+                                  </form>
                                 </div>
                               </div>
                             </div>
@@ -401,7 +418,7 @@
                       </ul>
                       <div class="d-flex flex-wrap justify-content-center">
                         <a href="index.html" class="w-100 btn btn-dark mb-1" type="submit">View Cart</a>
-                        <a href="index.html" class="w-100 btn btn-primary" type="submit">Go to checkout</a>
+                        <a href="#" class="w-100 btn btn-primary btn-checkout" role="button">Go to checkout</a>
                       </div>
                     </div>
                   </li>
@@ -413,6 +430,27 @@
       </nav>
 
     </header>
+
+    <div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="checkoutModalLabel">Checkout</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="checkout-form" novalidate>
+              <div class="form-group pb-3">
+                <label class="mb-2" for="checkout-card-number">Credit card number</label>
+                <input type="text" name="cardNumber" id="checkout-card-number" inputmode="numeric"
+                  placeholder="XXXX XXXX XXXX XXXX" class="form-control w-100 rounded-3 p-3" required>
+              </div>
+              <button type="submit" class="btn btn-dark w-100">Create order</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <section id="billboard" class="position-relative d-flex align-items-center py-5 bg-light-gray"
       style="background-image: url(images/banner-image-bg.jpg); background-size: cover; background-repeat: no-repeat; background-position: center; height: 800px;">
@@ -1709,5 +1747,143 @@
       crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
     <script type="text/javascript" src="js/script.js"></script>
+    <script>
+      // LocalStorage handling for simulated auth storage
+      const AUTH_USERS_KEY = "auth_users";
+      const AUTH_SESSION_KEY = "auth_current_user";
+
+      const loginForm = document.getElementById("login-form");
+      const registerForm = document.getElementById("register-form");
+      const loginMessage = document.getElementById("login-message");
+      const registerMessage = document.getElementById("register-message");
+      const loginEmail = document.getElementById("login-email");
+      const loginPassword = document.getElementById("login-password");
+      const registerName = document.getElementById("register-name");
+      const registerEmail = document.getElementById("register-email");
+      const registerPassword = document.getElementById("register-password");
+
+      const readUsers = () => {
+        try {
+          const raw = localStorage.getItem(AUTH_USERS_KEY);
+          return raw ? JSON.parse(raw) : [];
+        } catch (error) {
+          return [];
+        }
+      };
+
+      const writeUsers = (users) => {
+        localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(users));
+      };
+
+      const normalizeEmail = (email) => email.trim().toLowerCase();
+
+      const showMessage = (element, message, type) => {
+        if (!element) {
+          return;
+        }
+        element.textContent = message;
+        element.classList.remove("d-none", "text-danger", "text-success");
+        element.classList.add(type === "success" ? "text-success" : "text-danger");
+      };
+
+      const clearMessage = (element) => {
+        if (!element) {
+          return;
+        }
+        element.textContent = "";
+        element.classList.add("d-none");
+      };
+
+      // Password validation: min 8 chars, 1 uppercase, 1 special
+      const isValidPassword = (password) => {
+        if (password.length < 8) {
+          return false;
+        }
+        if (!/[A-Z]/.test(password)) {
+          return false;
+        }
+        return /[!@#$%^&*]/.test(password);
+      };
+
+      if (registerForm) {
+        registerForm.addEventListener("submit", (event) => {
+          event.preventDefault();
+          clearMessage(registerMessage);
+
+          const fullName = registerName.value.trim();
+          const email = registerEmail.value.trim();
+          const password = registerPassword.value;
+
+          // Register logic with frontend validation
+          if (!fullName || !email || !password) {
+            showMessage(registerMessage, "Please fill in all fields.", "error");
+            return;
+          }
+
+          if (!isValidPassword(password)) {
+            showMessage(
+              registerMessage,
+              "Password must be 8+ chars with 1 uppercase and 1 special (!,@,#,$,%,^,&,*).",
+              "error"
+            );
+            return;
+          }
+
+          const users = readUsers();
+          const emailKey = normalizeEmail(email);
+          const emailExists = users.some((user) => normalizeEmail(user.email) === emailKey);
+
+          if (emailExists) {
+            showMessage(registerMessage, "Email already exists. Please use a different email.", "error");
+            return;
+          }
+
+          users.push({
+            id: Date.now(),
+            fullName,
+            email: email.trim(),
+            password
+          });
+
+          writeUsers(users);
+          showMessage(registerMessage, "Registration successful. You can now log in.", "success");
+          registerForm.reset();
+          if (loginEmail) {
+            loginEmail.value = email.trim();
+          }
+        });
+      }
+
+      if (loginForm) {
+        loginForm.addEventListener("submit", (event) => {
+          event.preventDefault();
+          clearMessage(loginMessage);
+
+          const email = loginEmail.value.trim();
+          const password = loginPassword.value;
+
+          // Login logic using LocalStorage users
+          if (!email || !password) {
+            showMessage(loginMessage, "Please enter your email and password.", "error");
+            return;
+          }
+
+          const users = readUsers();
+          const emailKey = normalizeEmail(email);
+          const match = users.find(
+            (user) => normalizeEmail(user.email) === emailKey && user.password === password
+          );
+
+          if (!match) {
+            showMessage(loginMessage, "Invalid email or password.", "error");
+            return;
+          }
+
+          localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(match));
+          showMessage(loginMessage, `Welcome, ${match.fullName || match.email}!`, "success");
+          loginForm.reset();
+        });
+      }
+    </script>
   </body>
 </html>
