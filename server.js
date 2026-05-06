@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const fs = require('fs');
+const { createOrder } = require('./db');
 const productsRouter = require('./routes/products');
 require('dotenv').config();
 
@@ -16,17 +17,76 @@ app.use(express.json());
 // API routes
 app.use('/api/products', productsRouter);
 
-app.post('/api/checkout', (req, res) => {
-   const { cartItems, email, cardNumber } = req.body || {};
+app.post('/api/orders', async (req, res) => {
+   const { user_id, product_id, quantity, total_price } = req.body || {};
    const errors = {};
+
+   const userIdNumber = Number(user_id);
+   const productIdNumber = Number(product_id);
+   const quantityNumber = Number(quantity);
+   const totalPriceNumber = Number(total_price);
+
+   if (!Number.isFinite(userIdNumber) || userIdNumber <= 0) {
+      errors.user_id = 'user_id is required.';
+   }
+
+   if (!Number.isFinite(productIdNumber) || productIdNumber <= 0) {
+      errors.product_id = 'product_id is required.';
+   }
+
+   if (!Number.isFinite(quantityNumber) || quantityNumber <= 0) {
+      errors.quantity = 'quantity is required.';
+   }
+
+   if (!Number.isFinite(totalPriceNumber) || totalPriceNumber < 0) {
+      errors.total_price = 'total_price is required.';
+   }
+
+   if (Object.keys(errors).length) {
+      return res.status(400).json({ success: false, errors });
+   }
+
+   try {
+      const result = await createOrder({
+         user_id: userIdNumber,
+         product_id: productIdNumber,
+         quantity: quantityNumber,
+         total_price: totalPriceNumber
+      });
+
+      return res.status(201).json({ success: true, orderId: result.id });
+   } catch (err) {
+      return res.status(500).json({
+         success: false,
+         errors: { order: 'Save order failed.' }
+      });
+   }
+});
+
+app.post('/api/checkout', (req, res) => {
+   const { cartItems, email, cardNumber, user_id } = req.body || {};
+   const errors = {};
+
+   const userIdNumber = Number(user_id);
+   if (!Number.isFinite(userIdNumber) || userIdNumber <= 0) {
+      errors.user_id = 'user_id is required.';
+   }
 
    if (!Array.isArray(cartItems) || cartItems.length === 0) {
       errors.cartItems = 'Cart is empty.';
    } else {
       const hasInvalidItem = cartItems.some((item) => {
+         const productId = Number(item?.product_id);
          const price = Number(item?.price);
          const quantity = Number(item?.quantity ?? 1);
-         return !Number.isFinite(price) || price < 0 || !Number.isFinite(quantity) || quantity <= 0;
+         return (
+            !Number.isFinite(productId) ||
+            productId <= 0 ||
+            !Number.isFinite(price) ||
+            price < 0 ||
+            !Number.isFinite(quantity) ||
+            quantity <= 0
+         );
       });
       if (hasInvalidItem) {
          errors.cartItems = 'Cart items are invalid.';
@@ -54,6 +114,21 @@ app.post('/api/checkout', (req, res) => {
    }, 0);
 
    try {
+      const orderResults = await Promise.all(
+         cartItems.map((item) => {
+            const productId = Number(item?.product_id);
+            const price = Number(item?.price);
+            const quantity = Number(item?.quantity ?? 1);
+
+            return createOrder({
+               user_id: userIdNumber,
+               product_id: productId,
+               quantity,
+               total_price: Number((price * quantity).toFixed(2))
+            });
+         })
+      );
+
       const ordersPath = path.join(__dirname, 'orders.json');
       const existing = fs.existsSync(ordersPath)
          ? JSON.parse(fs.readFileSync(ordersPath, 'utf8'))
@@ -70,7 +145,12 @@ app.post('/api/checkout', (req, res) => {
       existing.push(order);
       fs.writeFileSync(ordersPath, JSON.stringify(existing, null, 2));
 
-      return res.status(200).json({ success: true, orderId: order.id, total: order.total });
+      return res.status(200).json({
+         success: true,
+         orderId: order.id,
+         sqliteOrderIds: orderResults.map((result) => result.id),
+         total: order.total
+      });
    } catch (err) {
       return res.status(400).json({
          success: false,
