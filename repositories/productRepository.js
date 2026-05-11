@@ -13,4 +13,13 @@ async function readProducts() {
   return [];
 }
 
-module.exports = { readProducts };
+async function getProductById(productId) {
+  const products = await readProducts();
+  const idNumber = Number(productId);
+  if (!Number.isFinite(idNumber)) {
+    return null;
+  }
+  return products.find((product) => Number(product.id) === idNumber) || null;
+}
+
+module.exports = { readProducts, getProductById };

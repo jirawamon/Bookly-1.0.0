@@ -1,8 +1,13 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
+const configuredPath = process.env.DB_PATH;
+if (!configuredPath) {
+  throw new Error('DB_PATH is required. Set it in the .env file.');
+}
+
 // Centralized SQLite connection for order storage.
-const dbPath = path.join(__dirname, '..', 'store.sqlite');
+const dbPath = path.resolve(__dirname, '..', configuredPath);
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('Failed to connect to SQLite:', err.message);

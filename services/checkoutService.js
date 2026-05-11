@@ -1,4 +1,5 @@
 const orderRepository = require('../repositories/orderRepository');
+const productRepository = require('../repositories/productRepository');
 
 // Handles checkout validation and persistence across storage layers.
 async function checkout({ cartItems, email, cardNumber, user_id }) {
@@ -14,13 +15,10 @@ async function checkout({ cartItems, email, cardNumber, user_id }) {
   } else {
     const hasInvalidItem = cartItems.some((item) => {
       const productId = Number(item?.product_id ?? item?.id);
-      const price = Number(item?.price ?? item?.sale_price);
       const quantity = Number(item?.quantity ?? 1);
       return (
         !Number.isFinite(productId) ||
         productId <= 0 ||
-        !Number.isFinite(price) ||
-        price < 0 ||
         !Number.isFinite(quantity) ||
         quantity <= 0
       );
@@ -47,23 +45,59 @@ async function checkout({ cartItems, email, cardNumber, user_id }) {
     throw error;
   }
 
-  const total = cartItems.reduce((sum, item) => {
-    const price = Number(item.price ?? item.sale_price);
-    const quantity = Number(item.quantity ?? 1);
-    return sum + price * quantity;
+  const normalizedItems = [];
+  for (const item of cartItems) {
+    const productId = Number(item?.product_id ?? item?.id);
+    const quantity = Math.floor(Number(item?.quantity ?? 1));
+
+    if (!Number.isFinite(productId) || productId <= 0) {
+      errors.cartItems = 'Cart items are invalid.';
+      break;
+    }
+
+    if (!Number.isFinite(quantity) || quantity <= 0) {
+      errors.cartItems = 'Cart items are invalid.';
+      break;
+    }
+
+    const product = await productRepository.getProductById(productId);
+    if (!product) {
+      errors.cartItems = 'Product not found.';
+      break;
+    }
+
+    const unitPrice = Number(product.sale_price ?? product.original_price ?? product.price);
+    if (!Number.isFinite(unitPrice) || unitPrice < 0) {
+      errors.cartItems = 'Product price is invalid.';
+      break;
+    }
+
+    normalizedItems.push({
+      product_id: productId,
+      title: product.title,
+      price: unitPrice,
+      quantity
+    });
+  }
+
+  if (Object.keys(errors).length) {
+    const error = new Error('Checkout validation failed.');
+    error.status = 400;
+    error.errors = errors;
+    throw error;
+  }
+
+  const total = normalizedItems.reduce((sum, item) => {
+    return sum + item.price * item.quantity;
   }, 0);
 
   const sqliteOrders = await Promise.all(
-    cartItems.map((item) => {
-      const productId = Number(item?.product_id ?? item?.id);
-      const price = Number(item?.price ?? item?.sale_price);
-      const quantity = Number(item?.quantity ?? 1);
-
+    normalizedItems.map((item) => {
       return orderRepository.createOrderRecord({
         user_id: userIdNumber,
-        product_id: productId,
-        quantity,
-        total_price: Number((price * quantity).toFixed(2))
+        product_id: item.product_id,
+        quantity: item.quantity,
+        total_price: Number((item.price * item.quantity).toFixed(2))
       });
     })
   );
@@ -71,7 +105,7 @@ async function checkout({ cartItems, email, cardNumber, user_id }) {
   const orderSnapshot = {
     id: Date.now(),
     email: String(email).trim(),
-    items: cartItems,
+    items: normalizedItems,
     total: Number(total.toFixed(2)),
     createdAt: new Date().toISOString()
   };

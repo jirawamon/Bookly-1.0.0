@@ -34,6 +34,29 @@ function validatePassword(password) {
 }
 
 async function login({ email, password }) {
+  const errors = {};
+  const resolvedEmail = String(email || '').trim();
+  const resolvedPassword = String(password || '');
+
+  if (!resolvedEmail) {
+    errors.email = 'Email is required.';
+  }
+  if (!resolvedPassword) {
+    errors.password = 'Password is required.';
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (resolvedEmail && !emailRegex.test(resolvedEmail)) {
+    errors.email = 'Email is invalid.';
+  }
+
+  if (Object.keys(errors).length) {
+    const error = new Error('Validation failed.');
+    error.status = 400;
+    error.errors = errors;
+    throw error;
+  }
+
   const user = await userRepository.findByEmail(email);
   if (!user) {
     const error = new Error('Invalid email or password.');
@@ -56,11 +79,17 @@ async function login({ email, password }) {
     throw error;
   }
 
-  const jwtSecret = process.env.JWT_SECRET || 'bookly-dev-secret';
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    const error = new Error('JWT_SECRET is not configured.');
+    error.status = 500;
+    error.errors = { auth: 'JWT secret missing.' };
+    throw error;
+  }
   const token = jwt.sign(
     { id: user.id, email: user.email },
     jwtSecret,
-    { expiresIn: '1h' }
+    { expiresIn: '24h' }
   );
 
   return {
