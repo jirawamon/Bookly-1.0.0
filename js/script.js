@@ -17,6 +17,7 @@
     const AUTH_TOKEN_KEY = "authToken";
     const AUTH_EMAIL_KEY = "authEmail";
     const AUTH_NAME_KEY = "authFirstName";
+    const AUTH_USER_ID_KEY = "authUserId";
     const ORDER_STORAGE_KEY = "orderStorage";
 
     function loadStorageArray(key) {
@@ -222,6 +223,30 @@
         }
 
         return sum % 10 === 0;
+    }
+
+    function isValidPassword(password) {
+        if (!password || password.length < 8) {
+            return false;
+        }
+        if (!/[A-Z]/.test(password)) {
+            return false;
+        }
+        return /[!@#$%^&*]/.test(password);
+    }
+
+    function updateMessage($el, text, type) {
+        if (!$el || !$el.length) {
+            return;
+        }
+        if (!text) {
+            $el.addClass('d-none');
+            $el.text('');
+            return;
+        }
+        $el.removeClass('d-none text-success text-danger');
+        $el.addClass(type === 'success' ? 'text-success' : 'text-danger');
+        $el.text(text || '');
     }
 
     function createOrderLocally() {
@@ -659,13 +684,16 @@
             })
             .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
             .then(({ ok, data }) => {
-                if (!ok || !data?.token) {
+                if (!ok || !data?.success || !data?.data?.token) {
                     throw new Error(data?.message || 'Login failed.');
                 }
 
-                localStorage.setItem(AUTH_TOKEN_KEY, data.token);
-                localStorage.setItem(AUTH_EMAIL_KEY, email);
-                localStorage.setItem(AUTH_NAME_KEY, data.firstName || '');
+                localStorage.setItem(AUTH_TOKEN_KEY, data.data.token);
+                localStorage.setItem(AUTH_EMAIL_KEY, data.data.user?.email || email);
+                localStorage.setItem(AUTH_NAME_KEY, data.data.user?.firstName || data.data.user?.fullName || '');
+                if (data.data.user?.id) {
+                    localStorage.setItem(AUTH_USER_ID_KEY, String(data.data.user.id));
+                }
                 setUserLoggedIn(true);
 
                 messageEl.removeClass('d-none text-danger').addClass('text-success');
@@ -679,11 +707,57 @@
             });
         });
 
+        $('#register-form').on('submit', function(e) {
+            e.preventDefault();
+
+            const fullName = String($('#register-name').val() || '').trim();
+            const email = String($('#register-email').val() || '').trim();
+            const password = String($('#register-password').val() || '').trim();
+            const messageEl = $('#register-message');
+
+            if (!fullName || !email || !password) {
+                updateMessage(messageEl, 'Please fill in all fields.', 'error');
+                return;
+            }
+
+            if (!isValidPassword(password)) {
+                updateMessage(
+                    messageEl,
+                    'Password must be 8+ chars with 1 uppercase and 1 special (!,@,#,$,%,^,&,*).',
+                    'error'
+                );
+                return;
+            }
+
+            updateMessage(messageEl, '', 'success');
+
+            fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fullName, email, password })
+            })
+            .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
+            .then(({ ok, data }) => {
+                if (!ok || !data?.success) {
+                    const errors = Object.values(data?.errors || {}).filter(Boolean).join(' ');
+                    throw new Error(errors || data?.message || 'Registration failed.');
+                }
+
+                updateMessage(messageEl, 'Registration successful. You can now log in.', 'success');
+                $('#register-form')[0].reset();
+                $('#login-email').val(email);
+            })
+            .catch((err) => {
+                updateMessage(messageEl, err.message || 'Registration failed.', 'error');
+            });
+        });
+
         $(document).on('click', '.btn-logout', function(e) {
             e.preventDefault();
             localStorage.removeItem(AUTH_TOKEN_KEY);
             localStorage.removeItem(AUTH_EMAIL_KEY);
             localStorage.removeItem(AUTH_NAME_KEY);
+            localStorage.removeItem(AUTH_USER_ID_KEY);
             setUserLoggedIn(false);
         });
 
@@ -722,6 +796,12 @@
                 return;
             }
             const email = localStorage.getItem(AUTH_EMAIL_KEY) || '';
+            const userId = Number(localStorage.getItem(AUTH_USER_ID_KEY));
+
+            if (!Number.isFinite(userId) || userId <= 0) {
+                alert('user_id is required. Please login again.');
+                return;
+            }
 
             fetch('/api/checkout', {
                 method: 'POST',
@@ -729,7 +809,8 @@
                 body: JSON.stringify({
                     cartItems: cartStorage,
                     email,
-                    cardNumber
+                    cardNumber,
+                    user_id: userId
                 })
             })
             .then((response) => response.json().then((data) => ({ ok: response.ok, data })))

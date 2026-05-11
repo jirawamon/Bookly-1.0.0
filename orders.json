@@ -30,5 +30,21 @@
     ],
     "total": 2800,
     "createdAt": "2026-05-06T08:02:19.639Z"
+  },
+  {
+    "id": 1778481326267,
+    "email": "user1@example.com",
+    "items": [
+      {
+        "id": 1,
+        "title": "The Phoenix Chronicles",
+        "price": 999,
+        "image": "images/product-item1.png",
+        "quantity": 2,
+        "addedAt": "2026-05-11T06:34:57.958Z"
+      }
+    ],
+    "total": 1998,
+    "createdAt": "2026-05-11T06:35:26.267Z"
   }
 ]

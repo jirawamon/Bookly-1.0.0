@@ -1,16 +1,18 @@
-const fs = require('fs').promises;
-const path = require('path');
+const productRepository = require('../repositories/productRepository');
 
-const dataPath = path.join(__dirname, '..', 'project.json');
+// Provides product filtering and business logic.
+async function getAllProducts(category) {
+  const products = await productRepository.readProducts();
+  const normalizedCategory = String(category || '').trim().toLowerCase();
 
-async function getAllProducts() {
-  const raw = await fs.readFile(dataPath, 'utf8');
-  const parsed = JSON.parse(raw);
+  if (!normalizedCategory) {
+    return products;
+  }
 
-  // If the file is an array, return it. If it has a `products` key, return that.
-  if (Array.isArray(parsed)) return parsed;
-  if (Array.isArray(parsed.products)) return parsed.products;
-  return parsed;
+  return products.filter((product) => {
+    const productCategory = String(product.category || '').trim().toLowerCase();
+    return productCategory === normalizedCategory;
+  });
 }
 
 module.exports = { getAllProducts };
